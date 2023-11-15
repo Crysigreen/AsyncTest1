@@ -1,0 +1,38 @@
+﻿@page
+@model AsyncTest1.Pages.DiningPhilosophersModel
+@{
+    ViewData["Title"] = "Dining Philosophers";
+}
+
+<h1>Dining Philosophers</h1>
+
+<div id="philosopher-status">
+    @foreach (var philosopher in Model.Philosophers)
+    {
+        <p id="philosopher-@philosopher.Id">Philosopher @philosopher.Id: @philosopher.Status</p>
+    }
+</div>
+
+@section scripts {
+    <script src="~/lib\microsoft\signalr\dist\browser\signalr.js"></script>
+    <script>
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/philosophershub")
+            .configureLogging(signalR.LogLevel.Information)
+            .build();
+
+        connection.on("UpdatePhilosopherStatus", function (philosopherId, status,color) {
+            const philosopherElement = document.getElementById(`philosopher-${philosopherId}`);
+            philosopherElement.innerHTML = `Philosopher ${philosopherId}: ${status}`;
+            philosopherElement.style.color = color;
+        });
+
+        connection.start()
+            .then(function () {
+                console.log("SignalR connected.");
+            })
+            .catch(function (err) {
+                console.error(err.toString());
+            });
+    </script>
+}
